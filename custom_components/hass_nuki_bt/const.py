@@ -1,4 +1,5 @@
 """Constants for hass_nuki_bt."""
+
 from logging import Logger, getLogger
 
 LOGGER: Logger = getLogger(__package__)

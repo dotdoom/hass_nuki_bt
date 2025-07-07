@@ -1,4 +1,5 @@
 """Support for Nuki binary sensors."""
+
 from dataclasses import dataclass
 from collections.abc import Callable
 import logging
@@ -26,6 +27,7 @@ class NukiBinarySensorEntityDescription(BinarySensorEntityDescription):
     info_function: Callable | None = (
         lambda slf: slf.device.keyturner_state[slf.sensor] != 0
     )
+
 
 SENSOR_TYPES_COMMON: list[NukiBinarySensorEntityDescription] = [
     NukiBinarySensorEntityDescription(
@@ -63,8 +65,14 @@ SENSOR_TYPES_LOCK: list[NukiBinarySensorEntityDescription] = SENSOR_TYPES_COMMON
         key="was_autounlock",
         name="Last action was autounlock",
         entity_category=EntityCategory.DIAGNOSTIC,
-        info_function=lambda slf: flags & 0x1 == 1 if ((data:=slf.coordinator.last_nuki_log_entry.get("data")) and (flags := data.get("flags"))) \
-            else False,
+        info_function=lambda slf: (
+            flags & 0x1 == 1
+            if (
+                (data := slf.coordinator.last_nuki_log_entry.get("data"))
+                and (flags := data.get("flags"))
+            )
+            else False
+        ),
         entity_registry_enabled_default=False,
     ),
 ]
@@ -75,16 +83,24 @@ async def async_setup_entry(hass, entry, async_add_entities):
     coordinator = hass.data[DOMAIN][entry.entry_id]
 
     if coordinator.device.device_type == NukiConst.NukiDeviceType.OPENER:
-        async_add_entities([NukiBinarySensor(coordinator, sensor) for sensor in SENSOR_TYPES_OPENER])
+        async_add_entities(
+            [NukiBinarySensor(coordinator, sensor) for sensor in SENSOR_TYPES_OPENER]
+        )
     else:
-        async_add_entities([NukiBinarySensor(coordinator, sensor) for sensor in SENSOR_TYPES_LOCK])
+        async_add_entities(
+            [NukiBinarySensor(coordinator, sensor) for sensor in SENSOR_TYPES_LOCK]
+        )
     return True
 
 
 class NukiBinarySensor(NukiEntity, BinarySensorEntity):
     """Representation of a Nuki sensor."""
 
-    def __init__(self, coordinator: NukiDataUpdateCoordinator, sensor: NukiBinarySensorEntityDescription) -> None:
+    def __init__(
+        self,
+        coordinator: NukiDataUpdateCoordinator,
+        sensor: NukiBinarySensorEntityDescription,
+    ) -> None:
         """Initialize the Niki sensor."""
         super().__init__(coordinator)
         self.sensor = sensor.key

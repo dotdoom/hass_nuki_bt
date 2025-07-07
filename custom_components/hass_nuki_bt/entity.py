@@ -1,4 +1,5 @@
 """NukiEntity class."""
+
 from __future__ import annotations
 
 import logging
@@ -36,10 +37,10 @@ class NukiEntity(PassiveBluetoothCoordinatorEntity[NukiDataUpdateCoordinator]):
             model=coordinator.device.device_type,
             name=coordinator.device_name,
             hw_version=".".join(
-                str(x) for x in coordinator.device.config.get("hardware_revision",[])
+                str(x) for x in coordinator.device.config.get("hardware_revision", [])
             ),
             sw_version=".".join(
-                str(x) for x in coordinator.device.config.get("firmware_version",[])
+                str(x) for x in coordinator.device.config.get("firmware_version", [])
             ),
         )
 
@@ -64,12 +65,18 @@ class NukiEntity(PassiveBluetoothCoordinatorEntity[NukiDataUpdateCoordinator]):
         """Do door action."""
         user = await self.hass.auth.async_get_user(self._context.user_id)
         user_name = user.name if user else None
-        await self.device.lock_action(action, name_suffix=user_name, wait_for_completed = True)
+        await self.device.lock_action(
+            action, name_suffix=user_name, wait_for_completed=True
+        )
         await self.coordinator.async_get_last_action_log_entry()
         self.coordinator.async_update_nuki_listeners()
 
     async def async_handle_update_nuki_time(self, time=None):
         if not self.coordinator._security_pin:
-            raise ServiceValidationError("Security PIN is required to update nuki time.")
-        result = await self.device.update_nuki_time(self.coordinator._security_pin, time)
+            raise ServiceValidationError(
+                "Security PIN is required to update nuki time."
+            )
+        result = await self.device.update_nuki_time(
+            self.coordinator._security_pin, time
+        )
         return result.status

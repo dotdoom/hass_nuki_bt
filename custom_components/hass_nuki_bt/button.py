@@ -1,8 +1,13 @@
 """Button platform for hass_nuki_bt."""
+
 from dataclasses import dataclass
 from collections.abc import Callable
 import logging
-from homeassistant.components.button import ButtonEntity, ButtonEntityDescription, ButtonDeviceClass
+from homeassistant.components.button import (
+    ButtonEntity,
+    ButtonEntityDescription,
+    ButtonDeviceClass,
+)
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -76,7 +81,9 @@ async def async_setup_entry(
     """Set up Nuki lock based on a config entry."""
     coordinator: NukiDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]
     if coordinator.device.device_type == NukiConst.NukiDeviceType.OPENER:
-        async_add_entities([NukiButton(coordinator, btn) for btn in BUTTON_TYPES_OPENER])
+        async_add_entities(
+            [NukiButton(coordinator, btn) for btn in BUTTON_TYPES_OPENER]
+        )
     else:
         async_add_entities([NukiButton(coordinator, btn) for btn in BUTTON_TYPES_LOCK])
 

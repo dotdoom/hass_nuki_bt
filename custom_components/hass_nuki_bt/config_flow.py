@@ -1,4 +1,5 @@
 """Adds config flow for Nuki."""
+
 import random
 from typing import Any
 import re

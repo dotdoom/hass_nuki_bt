@@ -1,4 +1,5 @@
 """Sensor platform for hass_nuki_bt."""
+
 from __future__ import annotations
 from dataclasses import dataclass
 from collections.abc import Callable
@@ -36,6 +37,7 @@ class NukiSensorEntityDescription(SensorEntityDescription):
     info_function: Callable | None = lambda slf: slf.device.keyturner_state[slf.sensor]
     icon_function: Callable | None = None
 
+
 SENSOR_TYPES: dict[str, NukiSensorEntityDescription] = {
     "name": NukiSensorEntityDescription(
         key="name",
@@ -66,7 +68,11 @@ SENSOR_TYPES: dict[str, NukiSensorEntityDescription] = {
     "lock_state": NukiSensorEntityDescription(
         key="lock_state",
         name="Lock state",
-        icon_function=lambda slf:"mdi:lock" if int(slf.device.keyturner_state["lock_state"]) == 1 else "mdi:lock-open",
+        icon_function=lambda slf: (
+            "mdi:lock"
+            if int(slf.device.keyturner_state["lock_state"]) == 1
+            else "mdi:lock-open"
+        ),
         device_class=SensorDeviceClass.ENUM,
     ),
     "door_sensor_state": NukiSensorEntityDescription(
@@ -92,8 +98,12 @@ SENSOR_TYPES: dict[str, NukiSensorEntityDescription] = {
     "last_lock_action_completion_status": NukiSensorEntityDescription(
         key="last_lock_action_completion_status",
         name="Last action completion status",
-        icon_function=lambda slf: "mdi:lock-check" if slf.device.keyturner_state['last_lock_action_completion_status'] == NukiConst.LockActionCompletionStatus.SUCCESS \
-            else "mdi:lock-alert",
+        icon_function=lambda slf: (
+            "mdi:lock-check"
+            if slf.device.keyturner_state["last_lock_action_completion_status"]
+            == NukiConst.LockActionCompletionStatus.SUCCESS
+            else "mdi:lock-alert"
+        ),
         device_class=SensorDeviceClass.ENUM,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
@@ -101,9 +111,12 @@ SENSOR_TYPES: dict[str, NukiSensorEntityDescription] = {
         key="last_nuki_command_status",
         name="Last Nuki command status",
         info_function=lambda slf: slf.device.last_action_status,
-        icon_function=lambda slf: "mdi:lock-check" if slf.device.last_action_status == NukiConst.StatusCode.COMPLETED \
-            or slf.device.last_action_status == NukiConst.StatusCode.ACCEPTED \
-                else "mdi:lock-alert",
+        icon_function=lambda slf: (
+            "mdi:lock-check"
+            if slf.device.last_action_status == NukiConst.StatusCode.COMPLETED
+            or slf.device.last_action_status == NukiConst.StatusCode.ACCEPTED
+            else "mdi:lock-alert"
+        ),
         device_class=SensorDeviceClass.ENUM,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
@@ -121,17 +134,35 @@ SENSOR_TYPES: dict[str, NukiSensorEntityDescription] = {
         device_class=SensorDeviceClass.ENUM,
         entity_category=EntityCategory.DIAGNOSTIC,
         # There is no user name if last action was triggered by button/manual etc.
-        info_function=lambda slf: name if (name := slf.coordinator.last_nuki_log_entry.get("name")) else \
-            trigger if ((data:=slf.coordinator.last_nuki_log_entry.get("data")) and (trigger := data.get("trigger"))) \
-            else "Unknown",
+        info_function=lambda slf: (
+            name
+            if (name := slf.coordinator.last_nuki_log_entry.get("name"))
+            else (
+                trigger
+                if (
+                    (data := slf.coordinator.last_nuki_log_entry.get("data"))
+                    and (trigger := data.get("trigger"))
+                )
+                else "Unknown"
+            )
+        ),
     ),
     "last_log_timestamp": NukiSensorEntityDescription(
         key="last_log_timestamp",
         name="Last log timestamp",
         device_class=SensorDeviceClass.TIMESTAMP,
         entity_category=EntityCategory.DIAGNOSTIC,
-        info_function=lambda slf: ts.replace(tzinfo=datetime.timezone(datetime.timedelta(minutes=slf.device.keyturner_state['timezone_offset']))) \
-             if (ts := slf.coordinator.last_nuki_log_entry.get("timestamp")) else None,
+        info_function=lambda slf: (
+            ts.replace(
+                tzinfo=datetime.timezone(
+                    datetime.timedelta(
+                        minutes=slf.device.keyturner_state["timezone_offset"]
+                    )
+                )
+            )
+            if (ts := slf.coordinator.last_nuki_log_entry.get("timestamp"))
+            else None
+        ),
         entity_registry_enabled_default=False,
     ),
     "last_state_timestamp": NukiSensorEntityDescription(
@@ -139,11 +170,19 @@ SENSOR_TYPES: dict[str, NukiSensorEntityDescription] = {
         name="Last state timestamp",
         device_class=SensorDeviceClass.TIMESTAMP,
         entity_category=EntityCategory.DIAGNOSTIC,
-        info_function=lambda slf: ks['current_time'].replace(tzinfo=datetime.timezone(datetime.timedelta(minutes=ks['timezone_offset']))) \
-            if (ks := slf.device.keyturner_state) else None,
+        info_function=lambda slf: (
+            ks["current_time"].replace(
+                tzinfo=datetime.timezone(
+                    datetime.timedelta(minutes=ks["timezone_offset"])
+                )
+            )
+            if (ks := slf.device.keyturner_state)
+            else None
+        ),
         entity_registry_enabled_default=False,
     ),
 }
+
 
 async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback

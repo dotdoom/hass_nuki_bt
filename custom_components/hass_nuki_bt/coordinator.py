@@ -1,4 +1,5 @@
 """DataUpdateCoordinator for hass_nuki_bt."""
+
 from __future__ import annotations
 
 import asyncio
@@ -55,7 +56,7 @@ class NukiDataUpdateCoordinator(ActiveBluetoothDataUpdateCoordinator[None]):
         self.device_name = device_name
         self.base_unique_id = base_unique_id
         self.model = None
-        self.last_nuki_log_entry = {"index" : 0}
+        self.last_nuki_log_entry = {"index": 0}
         self._security_pin = security_pin
         self._nuki_listeners: dict[
             CALLBACK_TYPE, tuple[CALLBACK_TYPE, object | None]
@@ -156,11 +157,12 @@ class NukiDataUpdateCoordinator(ActiveBluetoothDataUpdateCoordinator[None]):
                     # if there are new log entries, get max 10 entries
                     logs = await self.device.request_log_entries(
                         security_pin=self._security_pin,
-                        count=min(10, logs[0].index - self.last_nuki_log_entry["index"]),
+                        count=min(
+                            10, logs[0].index - self.last_nuki_log_entry["index"]
+                        ),
                         start_index=logs[0].index,
                     )
                     for log in logs:
                         if log.type == NukiConst.LogEntryType.LOCK_ACTION:
                             self.last_nuki_log_entry = log
                             break
-
